@@ -1,0 +1,35 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+            <div id="index">
+                <h2>Your watchlist</h2>
+                
+            </div> 
+                {% for item in items.all %}
+                    <div class="container">
+                        <h3> {{item.item.title}} </h3>
+                        {% if item.item.on_sell == False %}
+                            <div class="div-sold">
+                                <p class="sold"> SOLD </p>
+                            </div>
+                            
+                        {%endif%}
+                        <p> Created on {{item.item.date}}  by <b>{{item.item.owner}}</b></p>
+                        <p> in <b> {{item.item.category}}</b></p>
+                        <img src="{{ item.item.image.url}}" alt="item" loading="lazy">
+                        <p> <strong> Initial price </strong> <u>{{item.item.price}}€</u></p>
+                        <form>
+                            <input type="submit" value="More details" formaction="{% url 'details' item.item.id%}" id="button">
+                        </form>
+                    </div>
+
+                {% empty %}
+                <div class="container">
+                    <h4> Ops.... <br> There aren't items in your Watchlist</h4></div>
+                    
+                {%endfor%}
+               
+            
+{% endblock %}
+

@@ -1,0 +1,69 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    
+    <div class="container">
+
+        <h3> {{item.title}} </h3>
+
+        {% if item.on_sell == False %}
+            <div class="div-sold">
+                <p class="sold"> SOLD </p>
+            </div>
+            
+        {%endif%}
+
+         <!-- Watchlist button -->
+        {% if logged and owner == False %}
+
+            {% if present  %}
+                <form action="{% url 'remove' item.id %}" method="GET">
+                    {% csrf_token %}
+                    <input type="submit" value="Remove from watchlist" class="remove">
+                </form>
+                    
+
+            {%else%}
+                <form action="{% url 'add' item.id %}" method="GET">
+                    {% csrf_token %}
+                    <input type="submit" value="Add to watchlist" class="button">
+                </form>
+            {%endif%}
+            
+        {%endif%} 
+
+        <form method="POST">
+            {% csrf_token %}
+
+                <p> Created on {{item.date}} by <b>{{item.owner}}</b></p>
+                <p> in <b>{{item.category}}</b></p>
+                <p> {{item.description}} </p>
+                <img src="{{ item.image.url}}" alt="item" loading="lazy">
+                <p> <strong> Initial price </strong> <u>{{item.price}}€</u></p> 
+            {% if item.actual_bid == 0 %}
+                <p> Actual bid <b>NOT PLACED</b></p>
+            {%else%}
+                <p> Actual bid <b> {{bid.amount}} </b> € by {{bid.buyer}} </p>
+            {%endif%}
+            
+            {% if item.on_sell == True %}
+                {% if logged %}
+                    <h4><font color="RED">{{message}}</font></h4>
+                    {{bid_form}}
+                </form>
+                {%else%}  
+                    <p><a href="{% url 'login' %}">Log In</a> or <a href="{% url 'register' %}">Register</a> to place  a BID</p>
+                {%endif%}  
+            {%endif%}  
+            {% if owner and item.on_sell == True %}
+            <form action="{% url 'sell' item.id %}">
+                {% csrf_token %}
+                <input type="submit" value="SELL" class="button">
+            </form>
+            {%endif%}           
+            
+            
+    </div>
+
+{% endblock %}

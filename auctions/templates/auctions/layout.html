@@ -22,8 +22,15 @@
             </li>
             {% if user.is_authenticated %}
                 <li class="nav-item">
+                    <a class="nav-link" href="{% url 'create' %}">Create Listing</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'watchlist' %}"> Watchlist </a>
+                </li>   
+                <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
                 </li>
+                
             {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}">Log In</a>
@@ -34,7 +41,10 @@
             {% endif %}
         </ul>
         <hr>
-        {% block body %}
-        {% endblock %}
+        <div id="bod">
+            {% block body %}
+            {% endblock %}
+        </div>
+        
     </body>
 </html>

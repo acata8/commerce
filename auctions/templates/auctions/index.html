@@ -1,7 +1,24 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+    
+    <div id="index">
+        <h2>Active Listings</h2>
+    </div>
+    
+    {% for item in items%}
+        <div class="container">
+            <h3> {{item.title}} </h3>
+            <p> Created on {{item.date}}  by <b>{{item.owner}}</b></p>
+            <p> in <b>{{item.category}}</b></p>
+            <img src="{{ item.image.url}}" alt="item" loading="lazy">
+            <p> <strong> Initial price </strong> <u>{{item.price}}€</u></p>
+            <form>
+                <input type="submit" value="More details" formaction="{% url 'details' item.id%}" id="button">
+            </form>
+        </div>   
+    {%endfor%}
 
-    TODO
 {% endblock %}
+
+
