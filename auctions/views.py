@@ -32,7 +32,8 @@ class Button(forms.Form):
 
 def index(request):
     return render(request, "auctions/index.html", {
-            "items": Listing.objects.exclude(on_sell=False)
+            "items": Listing.objects.exclude(on_sell=False),
+            "all": False
         })
 
 def login_view(request):
@@ -203,20 +204,12 @@ def add(request, item_id):
     if request.method == "GET":
         item = Listing.objects.get(pk=item_id)
         owner = User.objects.get(username=request.user.get_username())
-        if Watchlist.objects.filter(item_id=item_id):
-            return render(request, "auctions/watchlist.html", {
-            "item": item,
-            "all": False,
-            "message": item.title + " was already added! "
-        })
-        
-        else:
-            new_item = Watchlist.objects.create(
+        new_item = Watchlist.objects.create(
                 item = item,
                 user = owner
             )
-            new_item.save()
-            return HttpResponseRedirect(reverse("details", args=(item.id,)))
+        new_item.save()
+        return HttpResponseRedirect(reverse("details", args=(item.id,)))
 
 def watchlist(request):
     if request.method == "GET":
@@ -237,3 +230,10 @@ def sell(request, item_id):
         item.on_sell=False
         item.save(update_fields=['on_sell'])
         return HttpResponseRedirect(reverse("details", args=(item.id,)))
+
+def all(request):
+    if request.method == "GET":
+        return render(request, "auctions/index.html", {
+            "items": Listing.objects.all(),
+            "all": True
+        })

@@ -2,13 +2,23 @@
 
 {% block body %}
     
+    {%if all %}
     <div id="index">
-        <h2>Active Listings</h2>
+        <h2>All Listings</h2>
     </div>
-    
+    {%else%}
+        <div id="index">
+            <h2>Active Listings</h2>
+        </div>
+    {%endif%}
     {% for item in items%}
         <div class="container">
             <h3> {{item.title}} </h3>
+            {% if item.on_sell == False %}
+                <div class="div-sold">
+                    <p class="sold"> SOLD </p>
+                </div>
+            {%endif%}
             <p> Created on {{item.date}}  by <b>{{item.owner}}</b></p>
             <p> in <b>{{item.category}}</b></p>
             <img src="{{ item.image.url}}" alt="item" loading="lazy">
@@ -16,7 +26,13 @@
             <form>
                 <input type="submit" value="More details" formaction="{% url 'details' item.id%}" id="button">
             </form>
-        </div>   
+        </div>
+        
+    {% empty %}
+    <div class="container">
+        <h4> Ops.... <br> There aren't items on sell!</h4></div>
+    </div>
+
     {%endfor%}
 
 {% endblock %}

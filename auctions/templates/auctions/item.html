@@ -16,26 +16,30 @@
 
          <!-- Watchlist button -->
         {% if logged and owner == False %}
-
-            {% if present  %}
-                <form action="{% url 'remove' item.id %}" method="GET">
-                    {% csrf_token %}
-                    <input type="submit" value="Remove from watchlist" class="remove">
-                </form>
+            
+                {% if present %}
+                    <form action="{% url 'remove' item.id %}" method="GET">
+                        {% csrf_token %}
+                        <input type="submit" value="Remove from watchlist" class="remove">
+                    </form>
                     
 
             {%else%}
-                <form action="{% url 'add' item.id %}" method="GET">
-                    {% csrf_token %}
-                    <input type="submit" value="Add to watchlist" class="button">
-                </form>
+                {% if item.on_sell == True %}
+                    <form action="{% url 'add' item.id %}" method="GET">
+                        {% csrf_token %}
+                        <input type="submit" value="Add to watchlist" class="button">
+                    </form>
+                {%endif%}
             {%endif%}
-            
         {%endif%} 
+
+        {%if item.on_sell == False and request.user == bid.buyer %}
+            <p class="item-sold"> Congratulations! You win the item! </p>
+        {%endif%}
 
         <form method="POST">
             {% csrf_token %}
-
                 <p> Created on {{item.date}} by <b>{{item.owner}}</b></p>
                 <p> in <b>{{item.category}}</b></p>
                 <p> {{item.description}} </p>
@@ -43,8 +47,10 @@
                 <p> <strong> Initial price </strong> <u>{{item.price}}€</u></p> 
             {% if item.actual_bid == 0 %}
                 <p> Actual bid <b>NOT PLACED</b></p>
+            {%elif item.actual_bid > 0 and item.on_sell == True%}
+                <p> Actual bid <b> {{bid.amount}} </b> € by <b>{{bid.buyer}}</b></p>
             {%else%}
-                <p> Actual bid <b> {{bid.amount}} </b> € by {{bid.buyer}} </p>
+                <p> Sold to <b> {{bid.buyer}}</b>  for <b>{{bid.amount}}</b>€ </p>
             {%endif%}
             
             {% if item.on_sell == True %}
@@ -56,14 +62,14 @@
                     <p><a href="{% url 'login' %}">Log In</a> or <a href="{% url 'register' %}">Register</a> to place  a BID</p>
                 {%endif%}  
             {%endif%}  
-            {% if owner and item.on_sell == True %}
+            {% if owner and item.on_sell == True and item.actual_bid > 0 %}
             <form action="{% url 'sell' item.id %}">
                 {% csrf_token %}
                 <input type="submit" value="SELL" class="button">
             </form>
             {%endif%}           
             
-            
+           
     </div>
 
 {% endblock %}
