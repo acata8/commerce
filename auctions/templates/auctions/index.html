@@ -12,7 +12,9 @@
         </div>
     {%endif%}
     {% for item in items%}
-        <div class="container">
+        
+        <a class="cont" href="{% url 'details' item.id%}" title="More details for {{item.title}}">
+            <form>
             <h3> {{item.title}} </h3>
             {% if item.on_sell == False %}
                 <div class="div-sold">
@@ -23,16 +25,15 @@
             <p> in <b>{{item.category}}</b></p>
             <img src="{{ item.image.url}}" alt="item" loading="lazy">
             <p> <strong> Initial price </strong> <u>{{item.price}}€</u></p>
-            <form>
-                <input type="submit" value="More details" formaction="{% url 'details' item.id%}" id="button">
             </form>
-        </div>
+        </a>
+    {%empty%}
         
-    {% empty %}
     <div class="container">
-        <h4> Ops.... <br> There aren't items on sell!</h4></div>
+        <h4> There arent't items in this category! </h4>
     </div>
-
+        
+    
     {%endfor%}
 
 {% endblock %}

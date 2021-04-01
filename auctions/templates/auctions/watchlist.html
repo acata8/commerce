@@ -7,7 +7,7 @@
                 
             </div> 
                 {% for item in items.all %}
-                    <div class="container">
+                    <a class="cont" href="{% url 'details' item.item.id%}" title="More details for {{item.item.title}}">
                         <h3> {{item.item.title}} </h3>
                         {% if item.item.on_sell == False %}
                             <div class="div-sold">
@@ -19,10 +19,8 @@
                         <p> in <b> {{item.item.category}}</b></p>
                         <img src="{{ item.item.image.url}}" alt="item" loading="lazy">
                         <p> <strong> Initial price </strong> <u>{{item.item.price}}€</u></p>
-                        <form>
-                            <input type="submit" value="More details" formaction="{% url 'details' item.item.id%}" id="button">
-                        </form>
-                    </div>
+                        
+                    </a>
 
                 {% empty %}
                 <div class="container">

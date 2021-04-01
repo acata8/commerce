@@ -11,6 +11,9 @@ class Category(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+        class Meta:
+            ordering = ['-name']
+
 class Listing(models.Model):
     title = models.CharField(max_length=64)
     description = models.TextField(max_length=450)

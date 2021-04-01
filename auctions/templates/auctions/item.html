@@ -55,21 +55,52 @@
             
             {% if item.on_sell == True %}
                 {% if logged %}
-                    <h4><font color="RED">{{message}}</font></h4>
+                    <p class="error">{{message}}</h4>
                     {{bid_form}}
-                </form>
-                {%else%}  
-                    <p><a href="{% url 'login' %}">Log In</a> or <a href="{% url 'register' %}">Register</a> to place  a BID</p>
+        
+            {%else%}  
+                <p><a href="{% url 'login' %}">Log In</a> or <a href="{% url 'register' %}">Register</a> to place  a BID</p>
                 {%endif%}  
-            {%endif%}  
+            {%endif%}
+        </form>  
             {% if owner and item.on_sell == True and item.actual_bid > 0 %}
             <form action="{% url 'sell' item.id %}">
                 {% csrf_token %}
                 <input type="submit" value="SELL" class="button">
             </form>
             {%endif%}           
-            
-           
     </div>
+
+    <div id="index">
+        <h2> COMMENTS SECTIONS </h2>
+    </div>
+
+    <div class="container">
+        <form action="{% url 'add_comment' item.id %}" method="POST">
+            {% csrf_token %}
+        <div class='form'>
+                {{comment_form}}
+        </div>
+            <input type="submit" value="Send comment" class="button">
+        </form>
+    </div>  
+    <div class="comment-box">
+        <div class="list-comments">
+            {%for i in comments.all%}
+                <div class="comment">
+                    <textarea readonly class="description">{{i.description}} </textarea>
+                    <span><i><b>{{i.user}}</b>, {{i.date}}</i></span>
+                </div>
+            {%empty%}
+                <div class="container">
+                    <h4>There aren't comment here!</h4>
+                </div>
+            {%endfor%} 
+        </div>
+        
+        <hr>
+   </div>
+
+   
 
 {% endblock %}

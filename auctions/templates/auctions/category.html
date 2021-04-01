@@ -1,0 +1,52 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    
+    {%if all %}
+        <div id="index">
+            <h2>Categories</h2>
+        </div>
+        <div class="container">
+            {%for category in categories%}
+                <form  action="{% url 'searchCategory' category.id %}">
+                    <input type="submit" value="{{category.name}}">
+                </form>
+            {%endfor%}
+        </div>
+    {%else%}
+
+        <div id="index">
+            <h2> {{ item }}</h2>
+        </div>
+
+        {% for item in categories %}
+            <a class="cont" href="{% url 'details' item.id%}" title="More details for {{item.title}}">
+                <form>
+                <h3> {{item.title}} </h3>
+                {% if item.on_sell == False %}
+                    <div class="div-sold">
+                        <p class="sold"> SOLD </p>
+                    </div>
+                {%endif%}
+                <p> Created on {{item.date}}  by <b>{{item.owner}}</b></p>
+                <p> in <b>{{item.category}}</b></p>
+                <img src="{{ item.image.url}}" alt="item" loading="lazy">
+                <p> <strong> Initial price </strong> <u>{{item.price}}€</u></p>
+                </form>
+            </a>
+        {%empty%}
+        
+        <div class="container">
+            <h4> There arent't items in this category! </h4>
+        </div>
+            
+        
+        {%endfor%}
+
+
+
+    {%endif%}
+    
+  
+
+{% endblock %}

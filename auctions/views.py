@@ -8,13 +8,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import Listing, User, Category, Bid, Watchlist
+from .models import Listing, User, Category, Bid, Watchlist, Comment
 
 # pylint: disable=no-member
 
 class ListingForm(forms.Form):
     title = forms.CharField(label='', required=True, widget=forms.TextInput(attrs={'placeholder': 'Title'}))
-    description = forms.CharField(label='', widget=forms.Textarea(attrs={'placeholder': 'Description (450 character maximum)'}))
+    description = forms.CharField(label='', max_length=450, widget=forms.Textarea(attrs={'placeholder': 'Description (450 character maximum)', 'maxlenght':'450'}))
     price = forms.DecimalField(label='PRICE', required=True, widget=forms.TextInput(attrs={'placeholder': 'Price in EUR'}))
     image = forms.ImageField()
     choice = forms.ChoiceField(choices = [])
@@ -27,8 +27,8 @@ class ListingForm(forms.Form):
 class Bids(forms.Form):
     bid = forms.DecimalField(label='',required=False, widget=forms.TextInput(attrs={'placeholder': 'Place a bid'}))
 
-class Button(forms.Form):
-    btn = forms.CharField
+class CommentForm(forms.Form):
+    comment = forms.CharField(label='', required=False, max_length=250, widget=forms.Textarea(attrs={'placeholder': 'Leave a comment (250 character maximum)', 'rows':'15', 'cols':'35','maxlenght':250}))
 
 def index(request):
     return render(request, "auctions/index.html", {
@@ -69,11 +69,16 @@ def register(request):
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
+
         if password != confirmation:
             return render(request, "auctions/register.html", {
                 "message": "Passwords must match."
             })
-
+        
+        if request.POST["password"] == "" :
+             return render(request, "auctions/register.html", {
+                "message": "You need a password."
+        })
         # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
@@ -81,7 +86,7 @@ def register(request):
         except IntegrityError:
             return render(request, "auctions/register.html", { 
                 "message": "Username already taken."
-            })
+            })            
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
@@ -128,7 +133,7 @@ def details(request, item_id):
     else:
         item = Listing.objects.get(pk=item_id)
         form = Bids(request.POST)
-    
+        
         if Watchlist.objects.filter(user=user).filter(item=item).exists():
             present = True
         else:
@@ -139,11 +144,11 @@ def details(request, item_id):
                     "bid_form": Bids,
                     "bid": Bid.objects.filter(item = item).last(),
                     "owner": False,
-                    "present": present
+                    "present": present,
+                    "comment_form": CommentForm(),
+                    "comments": Comment.objects.filter(item_id=item_id)
                     }
         
-        
-
         if request.method == "POST" and form.is_valid():
             offer = form.cleaned_data.get('bid')
             if item.actual_bid < offer and item.price < offer:
@@ -178,7 +183,9 @@ def details(request, item_id):
                         "item": Listing.objects.get(pk = item_id),
                         "bid": Bid.objects.filter(item = item).last(),
                         "owner": True,
-                        "present": present
+                        "present": present,
+                        "comment_form": CommentForm(),
+                        "comments": Comment.objects.filter(item_id=item_id)
                     })
                             
             else:
@@ -189,7 +196,9 @@ def details(request, item_id):
                         "bid_form": Bids,
                         "bid.amount": 0,
                         "owner": False,
-                        "present": present
+                        "present": present,
+                        "comment_form": CommentForm(),
+                        "comments": Comment.objects.filter(item_id=item_id)
                     })
                 else:
                     return render(request, "auctions/item.html", {
@@ -197,7 +206,9 @@ def details(request, item_id):
                         "item": Listing.objects.get(id=item_id),
                         "bid.amount": 0,
                         "owner": True,
-                        "present": present
+                        "present": present,
+                        "comment_form": CommentForm(),
+                        "comments": Comment.objects.filter(item_id=item_id)
                     })
 
 def add(request, item_id):
@@ -237,3 +248,31 @@ def all(request):
             "items": Listing.objects.all(),
             "all": True
         })
+
+def add_comment(request, item_id):
+    form = CommentForm(request.POST)
+    if request.method == "POST" and form.is_valid():
+        new_comment = Comment.objects.create(
+            description= form.cleaned_data.get('comment'),
+            date = datetime.datetime.now(),
+            user = request.user,
+            item = Listing.objects.get(pk=item_id)
+        )
+        new_comment.save()
+        return HttpResponseRedirect(reverse("details", args=(item_id,)))
+        
+def category(request):
+    if request.method == "GET":
+        return render(request, "auctions/category.html",{
+            "categories": Category.objects.all(),
+            "all": True
+        })
+
+def search(request, category_id):
+    if request.method == "GET":
+        return render(request, "auctions/category.html",{
+            "item": Category.objects.all().filter(pk=category_id).first(),
+            "categories": Listing.objects.filter(category=category_id).exclude(on_sell=False),
+            "all": False
+        }) 
+   
