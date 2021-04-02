@@ -55,7 +55,7 @@
             
             {% if item.on_sell == True %}
                 {% if logged %}
-                    <p class="error">{{message}}</h4>
+                    <p class="error">{{message}}</h4> <br>
                     {{bid_form}}
         
             {%else%}  
@@ -76,13 +76,17 @@
     </div>
 
     <div class="container">
-        <form action="{% url 'add_comment' item.id %}" method="POST">
-            {% csrf_token %}
-        <div class='form'>
-                {{comment_form}}
-        </div>
-            <input type="submit" value="Send comment" class="button">
-        </form>
+        {% if logged %}
+            <form action="{% url 'add_comment' item.id %}" method="POST">
+                {% csrf_token %}
+            <div class='form'>
+                    {{comment_form}}
+            </div>
+                <input type="submit" value="Send comment" class="button">
+            </form>
+        {%else%}
+            <p> Register or log in to leave a comment!</p>
+        {%endif%}
     </div>  
     <div class="comment-box">
         <div class="list-comments">
@@ -91,10 +95,8 @@
                     <textarea readonly class="description">{{i.description}} </textarea>
                     <span><i><b>{{i.user}}</b>, {{i.date}}</i></span>
                 </div>
-            {%empty%}
-                <div class="container">
+            {%empty%}        
                     <h4>There aren't comment here!</h4>
-                </div>
             {%endfor%} 
         </div>
         

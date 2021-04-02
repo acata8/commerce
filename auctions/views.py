@@ -14,7 +14,7 @@ from .models import Listing, User, Category, Bid, Watchlist, Comment
 
 class ListingForm(forms.Form):
     title = forms.CharField(label='', required=True, widget=forms.TextInput(attrs={'placeholder': 'Title'}))
-    description = forms.CharField(label='', max_length=450, widget=forms.Textarea(attrs={'placeholder': 'Description (450 character maximum)', 'maxlenght':'450'}))
+    description = forms.CharField(label='', max_length=450, widget=forms.Textarea(attrs={'placeholder': 'Description (450 character maximum)', 'maxlenght':'450', 'cols':'32'}))
     price = forms.DecimalField(label='PRICE', required=True, widget=forms.TextInput(attrs={'placeholder': 'Price in EUR'}))
     image = forms.ImageField()
     choice = forms.ChoiceField(choices = [])
@@ -28,7 +28,7 @@ class Bids(forms.Form):
     bid = forms.DecimalField(label='',required=False, widget=forms.TextInput(attrs={'placeholder': 'Place a bid'}))
 
 class CommentForm(forms.Form):
-    comment = forms.CharField(label='', required=False, max_length=250, widget=forms.Textarea(attrs={'placeholder': 'Leave a comment (250 character maximum)', 'rows':'15', 'cols':'35','maxlenght':250}))
+    comment = forms.CharField(label='', required=False, max_length=250, widget=forms.Textarea(attrs={'placeholder': 'Leave a comment (250 character maximum)', 'rows':'15', 'cols':'32','maxlenght':250}))
 
 def index(request):
     return render(request, "auctions/index.html", {
@@ -122,18 +122,20 @@ def create(request):
 
 def details(request, item_id):
     user = request.user
-
+    item = Listing.objects.get(pk=item_id)
     if not user.is_authenticated:
         return render(request, "auctions/item.html", {
             "item": Listing.objects.get(id=item_id),
-            "logged": False
+            "logged": False,
+            "comments": Comment.objects.filter(item_id=item_id),
+            "bid": Bid.objects.filter(item = item).last(),
         })
     
     #IF USER IS AUTENTICATED
     else:
-        item = Listing.objects.get(pk=item_id)
-        form = Bids(request.POST)
         
+        form = Bids(request.POST)
+
         if Watchlist.objects.filter(user=user).filter(item=item).exists():
             present = True
         else:
@@ -211,6 +213,7 @@ def details(request, item_id):
                         "comments": Comment.objects.filter(item_id=item_id)
                     })
 
+@login_required
 def add(request, item_id):
     if request.method == "GET":
         item = Listing.objects.get(pk=item_id)
@@ -222,6 +225,7 @@ def add(request, item_id):
         new_item.save()
         return HttpResponseRedirect(reverse("details", args=(item.id,)))
 
+@login_required
 def watchlist(request):
     if request.method == "GET":
         items = Watchlist.objects.filter(user = request.user)
@@ -229,12 +233,14 @@ def watchlist(request):
             "items": items
         }) 
 
+@login_required
 def remove(request, item_id):
     if request.method == "GET":
         item = Listing.objects.get(pk=item_id)
-        removed = Watchlist.objects.get(item=item).delete()
+        removed = Watchlist.objects.filter(item=item).delete()
         return HttpResponseRedirect(reverse("details", args=(item.id,)))
 
+@login_required
 def sell(request, item_id):
     if request.method == "GET":
         item = Listing.objects.get(pk=item_id)
@@ -242,12 +248,14 @@ def sell(request, item_id):
         item.save(update_fields=['on_sell'])
         return HttpResponseRedirect(reverse("details", args=(item.id,)))
 
+
 def all(request):
     if request.method == "GET":
         return render(request, "auctions/index.html", {
             "items": Listing.objects.all(),
             "all": True
         })
+
 
 def add_comment(request, item_id):
     form = CommentForm(request.POST)
@@ -267,6 +275,7 @@ def category(request):
             "categories": Category.objects.all(),
             "all": True
         })
+
 
 def search(request, category_id):
     if request.method == "GET":
